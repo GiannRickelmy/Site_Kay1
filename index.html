@@ -60,7 +60,7 @@
     <div id="admin-interface" class="hidden fixed inset-0 z-50 bg-[#05060b] overflow-y-auto">
         <nav class="border-b border-white/5 px-8 py-6 flex justify-between items-center bg-[#05060b]/80 backdrop-blur-md sticky top-0">
             <h2 class="text-xl font-black italic tracking-tighter uppercase">AETHER <span class="text-indigo-500 font-normal">TERMINAL</span></h2>
-            <button onclick="location.reload()" class="px-6 py-2 rounded-xl bg-white/5 hover:bg-rose-600 transition-all text-xs font-bold">Encerrar Sessão</button>
+            <button onclick="location.reload()" class="px-6 py-2 rounded-xl bg-white/5 hover:bg-rose-600 transition-all text-xs font-bold">Sair</button>
         </nav>
         <main class="max-w-7xl mx-auto p-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
@@ -89,17 +89,17 @@
         const SUPABASE_KEY = 'sb_publishable_DZOSpc0qTVEQQv2j5gcjfw_T1nXcK5B';
         const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // CONFIGURAÇÃO DOS LINKS ATUALIZADA
+        // SEUS LINKS CONFIGURADOS
         const CONFIG_LINKS = {
             "8h": [
-                "LINK_DA_ETAPA_1", 
-                "LINK_DA_ETAPA_2"
+                "https://direct-link.net/2564496/i4nzuNVQCeRX", 
+                "https://link-center.net/2564496/T3kCS3FIdCkn"
             ],
             "24h": [
-                "LINK_DA_ETAPA_1", 
-                "LINK_DA_ETAPA_2", 
-                "LINK_DA_ETAPA_3", 
-                "LINK_DA_ETAPA_4"
+                "https://link-center.net/2564496/Ry1MGBHofDbC", 
+                "https://link-hub.net/2564496/tccRZMUncGCX",
+                "https://link-hub.net/2564496/v1rK8TifqXay",
+                "https://link-center.net/2564496/dUYJAVyDrPK2"
             ]
         };
 
@@ -136,13 +136,13 @@
                 document.getElementById('user-interface').classList.add('hidden');
                 document.getElementById('admin-interface').classList.remove('hidden');
                 loadStats();
-            } else { alert("Senha Incorreta."); }
+            } else { alert("Acesso Negado."); }
         }
 
         async function generateLifetime() {
             const senha = prompt("SENHA VENDEDOR:");
             if (await verificarSenha(senha)) { finalizeKey(876000); } 
-            else { alert("Senha Incorreta."); }
+            else { alert("Acesso Negado."); }
         }
 
         async function loadStats() {
