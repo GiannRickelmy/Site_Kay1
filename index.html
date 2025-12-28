@@ -23,7 +23,7 @@
     <div id="user-interface" class="glass max-w-md w-full p-10 rounded-[40px] text-center relative">
         <div class="mb-8">
             <h1 class="text-4xl font-extrabold tracking-tighter italic glow-text uppercase">AETHER<span class="text-indigo-500 font-light">KEY</span></h1>
-            <p id="status-text" class="text-slate-400 text-sm mt-2">Sistema de Verificação de Acesso</p>
+            <p id="status-text" class="text-slate-400 text-sm mt-2">Sistema de Verificação</p>
         </div>
 
         <div id="selection-area" class="space-y-3">
@@ -31,16 +31,14 @@
                 <div class="text-left"><h3 class="text-yellow-500 font-bold text-lg">Lifetime Pro</h3><p class="text-yellow-600/60 text-[10px] uppercase font-bold tracking-widest">Acesso Permanente</p></div>
                 <div class="bg-yellow-500 text-black p-2 rounded-xl font-black text-xs">$$$</div>
             </button>
+            
             <button onclick="startVerification('24h')" class="plan-card w-full p-5 rounded-3xl flex justify-between items-center group">
-                <div class="text-left"><h3 class="text-white font-bold text-lg text-cyan-400">Elite 24h</h3><p class="text-cyan-600/60 text-xs">8 Etapas Linkvertise</p></div>
+                <div class="text-left"><h3 class="text-white font-bold text-lg text-cyan-400">Elite 24h</h3><p class="text-cyan-600/60 text-xs">4 Etapas Linkvertise</p></div>
                 <div class="text-slate-500">→</div>
             </button>
+            
             <button onclick="startVerification('8h')" class="plan-card w-full p-5 rounded-3xl flex justify-between items-center group">
-                <div class="text-left"><h3 class="text-white font-bold text-lg text-purple-400">Standard 8h</h3><p class="text-purple-600/60 text-xs">4 Etapas Linkvertise</p></div>
-                <div class="text-slate-500">→</div>
-            </button>
-            <button onclick="startVerification('1h')" class="plan-card w-full p-5 rounded-3xl flex justify-between items-center group">
-                <div class="text-left"><h3 class="text-white font-bold text-lg">Express 1h</h3><p class="text-slate-500 text-xs">1 Etapa Linkvertise</p></div>
+                <div class="text-left"><h3 class="text-white font-bold text-lg text-purple-400">Standard 8h</h3><p class="text-purple-600/60 text-xs">2 Etapas Linkvertise</p></div>
                 <div class="text-slate-500">→</div>
             </button>
         </div>
@@ -80,7 +78,7 @@
                 </div>
             </div>
             <div class="glass p-10 rounded-[40px] border border-white/5">
-                <h3 class="text-xs font-bold text-slate-500 uppercase mb-6 tracking-widest">Fluxo de Atividade (Gráfico Real)</h3>
+                <h3 class="text-xs font-bold text-slate-500 uppercase mb-6 tracking-widest">Fluxo de Atividade</h3>
                 <div class="h-[300px]"><canvas id="adminChart"></canvas></div>
             </div>
         </main>
@@ -91,11 +89,18 @@
         const SUPABASE_KEY = 'sb_publishable_DZOSpc0qTVEQQv2j5gcjfw_T1nXcK5B';
         const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // COLOQUE SEUS LINKS DO LINKVERTISE AQUI
+        // CONFIGURAÇÃO DOS LINKS ATUALIZADA
         const CONFIG_LINKS = {
-            "1h": ["LINK_1"],
-            "8h": ["L1", "L2", "L3", "L4"],
-            "24h": ["L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8"]
+            "8h": [
+                "LINK_DA_ETAPA_1", 
+                "LINK_DA_ETAPA_2"
+            ],
+            "24h": [
+                "LINK_DA_ETAPA_1", 
+                "LINK_DA_ETAPA_2", 
+                "LINK_DA_ETAPA_3", 
+                "LINK_DA_ETAPA_4"
+            ]
         };
 
         async function verificarSenha(senhaDigitada) {
@@ -126,8 +131,7 @@
         }
 
         async function promptAdmin() {
-            const senha = prompt("Aether Terminal Access Code:");
-            if (!senha) return;
+            const senha = prompt("Aether Terminal Code:");
             if (await verificarSenha(senha)) {
                 document.getElementById('user-interface').classList.add('hidden');
                 document.getElementById('admin-interface').classList.remove('hidden');
@@ -137,7 +141,6 @@
 
         async function generateLifetime() {
             const senha = prompt("SENHA VENDEDOR:");
-            if (!senha) return;
             if (await verificarSenha(senha)) { finalizeKey(876000); } 
             else { alert("Senha Incorreta."); }
         }
@@ -145,34 +148,18 @@
         async function loadStats() {
             const { data: logs } = await _supabase.from('key_logs').select('*');
             if (!logs) return;
-
             const agora = new Date();
             const f = (d) => logs.filter(l => (agora - new Date(l.created_at)) < (d * 86400000)).length;
-            
             document.getElementById('stat-lifetime').innerText = logs.filter(l => l.plan_type === 'Lifetime').length;
             document.getElementById('stat-30d').innerText = f(30);
             document.getElementById('stat-today').innerText = f(1);
-
-            const ctx = document.getElementById('adminChart').getContext('2d');
-            new Chart(ctx, {
+            new Chart(document.getElementById('adminChart'), {
                 type: 'line',
                 data: {
                     labels: ['Hoje', '7 Dias', '30 Dias'],
-                    datasets: [{ 
-                        data: [f(1), f(7), f(30)], 
-                        borderColor: '#6366f1', 
-                        tension: 0.4, 
-                        fill: true, 
-                        backgroundColor: 'rgba(99, 102, 241, 0.05)',
-                        pointBackgroundColor: '#6366f1'
-                    }]
+                    datasets: [{ data: [f(1), f(7), f(30)], borderColor: '#6366f1', tension: 0.4, fill: true, backgroundColor: 'rgba(99, 102, 241, 0.05)' }]
                 },
-                options: { 
-                    maintainAspectRatio: false, 
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } }
-                }
+                options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         }
 
@@ -182,14 +169,13 @@
                 progress.etapa += 1;
                 const links = CONFIG_LINKS[progress.plano];
                 if (progress.etapa >= links.length) {
-                    finalizeKey(progress.plano === '1h' ? 1 : (progress.plano === '8h' ? 8 : 24));
+                    finalizeKey(progress.plano === '8h' ? 8 : 24);
                 } else {
                     localStorage.setItem('v_progress', JSON.stringify(progress));
                     window.location.href = links[progress.etapa];
                 }
                 return;
             }
-
             const data = JSON.parse(localStorage.getItem('active_key_data'));
             if(data && data.expires > Date.now()) {
                 toggleView('key');
@@ -221,7 +207,7 @@
 
         function copyKey() {
             navigator.clipboard.writeText(document.getElementById('key-text').innerText);
-            alert("Copiada para a área de transferência!");
+            alert("Copiada!");
         }
     </script>
 </body>
