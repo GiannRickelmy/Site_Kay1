@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aether Key | Premium Access</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #6366f1; --accent: #a855f7; --bg: #05060b; }
+        body { background-color: var(--bg); color: white; font-family: 'Inter', sans-serif; background-image: radial-gradient(circle at 50% -20%, #1e1b4b 0%, #05060b 80%); min-height: 100vh; margin: 0; display: flex; align-items: center; justify-content: center; }
+        .glass { background: rgba(15, 18, 30, 0.4); backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .btn-premium { background: linear-gradient(135deg, var(--primary), var(--accent)); transition: all 0.3s ease; }
+        .plan-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.2s ease; cursor: pointer; }
+        .plan-card:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.05); transform: translateY(-2px); }
+        .glow-text { text-shadow: 0 0 15px rgba(99, 102, 241, 0.5); }
+    </style>
+</head>
+<body class="p-6">
+
+    <div id="user-interface" class="glass max-w-md w-full p-10 rounded-[40px] text-center relative">
+        <div class="mb-8">
+            <h1 class="text-4xl font-extrabold tracking-tighter italic glow-text uppercase">AETHER<span class="text-indigo-500 font-light">KEY</span></h1>
+            <p id="status-text" class="text-slate-400 text-sm mt-2">Sistema de Verificação de Acesso</p>
+        </div>
+
+        <div id="selection-area" class="space-y-3">
+            <button onclick="generateLifetime()" class="plan-card w-full p-5 rounded-3xl flex justify-between items-center border-yellow-500/30 bg-yellow-500/10">
+                <div class="text-left"><h3 class="text-yellow-500 font-bold text-lg">Lifetime Pro</h3><p class="text-yellow-600/60 text-[10px] uppercase font-bold tracking-widest">Compra Direta / Sem Links</p></div>
+                <div class="bg-yellow-500 text-black p-2 rounded-xl font-black text-xs">$$$</div>
+            </button>
+
+            <button onclick="startVerification('24h')" class="plan-card w-full p-5 rounded-3xl flex justify-between items-center group">
+                <div class="text-left"><h3 class="text-white font-bold text-lg text-cyan-400">Elite 24h</h3><p class="text-cyan-600/60 text-xs">Requer 8 Links</p></div>
+                <div class="text-slate-500">→</div>
+            </button>
+
+            <button onclick="startVerification('8h')" class="plan-card w-full p-5 rounded-3xl flex justify-between items-center group">
+                <div class="text-left"><h3 class="text-white font-bold text-lg text-purple-400">Standard 8h</h3><p class="text-purple-600/60 text-xs">Requer 4 Links</p></div>
+                <div class="text-slate-500">→</div>
+            </button>
+
+            <button onclick="startVerification('1h')" class="plan-card w-full p-5 rounded-3xl flex justify-between items-center group">
+                <div class="text-left"><h3 class="text-white font-bold text-lg">Express 1h</h3><p class="text-slate-500 text-xs">Requer 1 Link</p></div>
+                <div class="text-slate-500">→</div>
+            </button>
+        </div>
+
+        <div id="key-result" class="hidden space-y-6">
+            <div class="bg-indigo-500/5 border border-indigo-500/20 p-8 rounded-[32px]">
+                <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-3">Chave Liberada</p>
+                <h2 id="key-text" class="text-3xl font-black text-white tracking-widest uppercase">---</h2>
+            </div>
+            <div id="timer" class="text-xs font-bold text-slate-400 py-3 bg-white/5 rounded-full inline-block px-8 border border-white/5 tracking-widest">00:00:00</div>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="copyKey()" class="btn-premium py-4 rounded-[20px] font-bold text-white text-sm uppercase">Copiar</button>
+                <button onclick="toggleView('selection')" class="bg-white/5 py-4 rounded-[20px] font-bold text-slate-400 text-sm uppercase">Planos</button>
+            </div>
+        </div>
+
+        <button onclick="promptAdmin()" class="mt-10 text-slate-800 text-[10px] font-bold uppercase tracking-[0.4em] hover:text-indigo-400">Admin Terminal</button>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://wqtpopahxhpjjeexodik.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_DZOSpc0qTVEQQv2j5gcjfw_T1nXcK5B';
+        const CODIGO_MESTRE = "019101910191";
+        const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // CONFIGURAÇÃO DOS LINKS - COLE SEUS LINKS AQUI
+        const CONFIG_LINKS = {
+            "1h": [
+                "LINK_AQUI"
+            ],
+            "8h": [
+                "LINK_1", "LINK_2", "LINK_3", "LINK_4"
+            ],
+            "24h": [
+                "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8"
+            ]
+        };
+
+        function startVerification(plano) {
+            const progresso = { plano: plano, etapa: 0 };
+            localStorage.setItem('v_progress', JSON.stringify(progresso));
+            alert("Etapa 1: Complete o encurtador para prosseguir.");
+            window.location.href = CONFIG_LINKS[plano][0];
+        }
+
+        async function finalizeKey(horas) {
+            const expDate = new Date();
+            expDate.setHours(expDate.getHours() + horas);
+            const { error } = await _supabase.from('key_logs').insert([{ 
+                plan_type: horas > 1000 ? 'Lifetime' : horas + 'h',
+                expires_at: expDate.toISOString()
+            }]);
+
+            if (!error) {
+                const key = "AETHER-" + (horas > 1000 ? "PERM-" : "") + Math.random().toString(36).substr(2, 7).toUpperCase();
+                localStorage.setItem('active_key_data', JSON.stringify({ key: key, expires: Date.now() + (horas * 3600000) }));
+                localStorage.removeItem('v_progress');
+                window.location.href = window.location.pathname; 
+            }
+        }
+
+        window.onload = () => {
+            const progress = JSON.parse(localStorage.getItem('v_progress'));
+            
+            if (progress) {
+                progress.etapa += 1;
+                const linksDoPlano = CONFIG_LINKS[progress.plano];
+
+                if (progress.etapa >= linksDoPlano.length) {
+                    const h = progress.plano === '1h' ? 1 : (progress.plano === '8h' ? 8 : 24);
+                    finalizeKey(h);
+                } else {
+                    localStorage.setItem('v_progress', JSON.stringify(progress));
+                    alert(`Etapa ${progress.etapa} de ${linksDoPlano.length} concluída!`);
+                    window.location.href = linksDoPlano[progress.etapa];
+                }
+                return;
+            }
+
+            const data = JSON.parse(localStorage.getItem('active_key_data'));
+            if(data && data.expires > Date.now()) {
+                toggleView('key');
+                document.getElementById('key-text').innerText = data.key;
+                setInterval(updateTimer, 1000);
+            }
+        };
+
+        function updateTimer() {
+            const data = JSON.parse(localStorage.getItem('active_key_data'));
+            const r = data.expires - Date.now();
+            if (r > 31536000000) {
+                document.getElementById('timer').innerText = "ACESSO VITALÍCIO";
+                document.getElementById('timer').style.color = "#eab308";
+                return;
+            }
+            if(r <= 0) { localStorage.removeItem('active_key_data'); location.reload(); }
+            const h = String(Math.floor(r/3600000)).padStart(2, '0');
+            const m = String(Math.floor((r%3600000)/60000)).padStart(2, '0');
+            const s = String(Math.floor((r%60000)/1000)).padStart(2, '0');
+            document.getElementById('timer').innerText = `${h}:${m}:${s}`;
+        }
+
+        function generateLifetime() {
+            if(prompt("SENHA VENDEDOR:") === CODIGO_MESTRE) finalizeKey(876000);
+        }
+
+        function toggleView(v) {
+            document.getElementById('selection-area').classList.toggle('hidden', v === 'key');
+            document.getElementById('key-result').classList.toggle('hidden', v !== 'key');
+        }
+
+        function copyKey() {
+            navigator.clipboard.writeText(document.getElementById('key-text').innerText);
+            alert("Chave copiada!");
+        }
+
+        function promptAdmin() {
+            const p = prompt("Security Code:");
+            if(p === CODIGO_MESTRE) alert("Painel Admin em desenvolvimento ou use o código anterior!");
+        }
+    </script>
+</body>
+</html>
