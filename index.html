@@ -32,15 +32,15 @@
                 <div class="bg-yellow-500 text-black p-2 rounded-xl font-black text-xs">$$$</div>
             </button>
             <button onclick="startVerification('24h')" class="plan-card w-full p-5 rounded-3xl flex justify-between items-center group">
-                <div class="text-left"><h3 class="text-white font-bold text-lg text-cyan-400">Elite 24h</h3><p class="text-cyan-600/60 text-xs">8 Links Linkvertise</p></div>
+                <div class="text-left"><h3 class="text-white font-bold text-lg text-cyan-400">Elite 24h</h3><p class="text-cyan-600/60 text-xs">8 Etapas Linkvertise</p></div>
                 <div class="text-slate-500">→</div>
             </button>
             <button onclick="startVerification('8h')" class="plan-card w-full p-5 rounded-3xl flex justify-between items-center group">
-                <div class="text-left"><h3 class="text-white font-bold text-lg text-purple-400">Standard 8h</h3><p class="text-purple-600/60 text-xs">4 Links Linkvertise</p></div>
+                <div class="text-left"><h3 class="text-white font-bold text-lg text-purple-400">Standard 8h</h3><p class="text-purple-600/60 text-xs">4 Etapas Linkvertise</p></div>
                 <div class="text-slate-500">→</div>
             </button>
             <button onclick="startVerification('1h')" class="plan-card w-full p-5 rounded-3xl flex justify-between items-center group">
-                <div class="text-left"><h3 class="text-white font-bold text-lg">Express 1h</h3><p class="text-slate-500 text-xs">1 Link Linkvertise</p></div>
+                <div class="text-left"><h3 class="text-white font-bold text-lg">Express 1h</h3><p class="text-slate-500 text-xs">1 Etapa Linkvertise</p></div>
                 <div class="text-slate-500">→</div>
             </button>
         </div>
@@ -61,7 +61,7 @@
 
     <div id="admin-interface" class="hidden fixed inset-0 z-50 bg-[#05060b] overflow-y-auto">
         <nav class="border-b border-white/5 px-8 py-6 flex justify-between items-center bg-[#05060b]/80 backdrop-blur-md sticky top-0">
-            <h2 class="text-xl font-black italic tracking-tighter">AETHER <span class="text-indigo-500 font-normal">TERMINAL</span></h2>
+            <h2 class="text-xl font-black italic tracking-tighter uppercase">AETHER <span class="text-indigo-500 font-normal">TERMINAL</span></h2>
             <button onclick="location.reload()" class="px-6 py-2 rounded-xl bg-white/5 hover:bg-rose-600 transition-all text-xs font-bold">Encerrar Sessão</button>
         </nav>
         <main class="max-w-7xl mx-auto p-8">
@@ -71,7 +71,7 @@
                     <h3 id="stat-lifetime" class="text-4xl font-black mt-2">0</h3>
                 </div>
                 <div class="glass p-8 rounded-[32px] border-l-4 border-indigo-500">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase">Keys Geradas (30d)</span>
+                    <span class="text-[10px] font-bold text-slate-500 uppercase">Geradas (30 dias)</span>
                     <h3 id="stat-30d" class="text-4xl font-black mt-2 text-indigo-400">0</h3>
                 </div>
                 <div class="glass p-8 rounded-[32px] border-l-4 border-cyan-500">
@@ -80,7 +80,7 @@
                 </div>
             </div>
             <div class="glass p-10 rounded-[40px] border border-white/5">
-                <h3 class="text-xs font-bold text-slate-500 uppercase mb-6 tracking-widest">Fluxo de Atividade</h3>
+                <h3 class="text-xs font-bold text-slate-500 uppercase mb-6 tracking-widest">Fluxo de Atividade (Gráfico Real)</h3>
                 <div class="h-[300px]"><canvas id="adminChart"></canvas></div>
             </div>
         </main>
@@ -91,13 +91,13 @@
         const SUPABASE_KEY = 'sb_publishable_DZOSpc0qTVEQQv2j5gcjfw_T1nXcK5B';
         const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // COLOQUE SEUS LINKS DO LINKVERTISE AQUI
         const CONFIG_LINKS = {
             "1h": ["LINK_1"],
             "8h": ["L1", "L2", "L3", "L4"],
             "24h": ["L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8"]
         };
 
-        // Segurança: Busca senha no banco
         async function verificarSenha(senhaDigitada) {
             const { data, error } = await _supabase.from('config_geral').select('valor').eq('id', 'admin_password').single();
             return !error && data && senhaDigitada === data.valor;
@@ -126,18 +126,20 @@
         }
 
         async function promptAdmin() {
-            const senha = prompt("Aether Terminal Code:");
+            const senha = prompt("Aether Terminal Access Code:");
+            if (!senha) return;
             if (await verificarSenha(senha)) {
                 document.getElementById('user-interface').classList.add('hidden');
                 document.getElementById('admin-interface').classList.remove('hidden');
                 loadStats();
-            } else { alert("Acesso Negado."); }
+            } else { alert("Senha Incorreta."); }
         }
 
         async function generateLifetime() {
             const senha = prompt("SENHA VENDEDOR:");
+            if (!senha) return;
             if (await verificarSenha(senha)) { finalizeKey(876000); } 
-            else { alert("Acesso Negado."); }
+            else { alert("Senha Incorreta."); }
         }
 
         async function loadStats() {
@@ -151,13 +153,26 @@
             document.getElementById('stat-30d').innerText = f(30);
             document.getElementById('stat-today').innerText = f(1);
 
-            new Chart(document.getElementById('adminChart'), {
+            const ctx = document.getElementById('adminChart').getContext('2d');
+            new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: ['Hoje', '7 Dias', '30 Dias'],
-                    datasets: [{ data: [f(1), f(7), f(30)], borderColor: '#6366f1', tension: 0.4, fill: true, backgroundColor: 'rgba(99, 102, 241, 0.05)' }]
+                    datasets: [{ 
+                        data: [f(1), f(7), f(30)], 
+                        borderColor: '#6366f1', 
+                        tension: 0.4, 
+                        fill: true, 
+                        backgroundColor: 'rgba(99, 102, 241, 0.05)',
+                        pointBackgroundColor: '#6366f1'
+                    }]
                 },
-                options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                options: { 
+                    maintainAspectRatio: false, 
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } }
+                }
             });
         }
 
@@ -185,6 +200,7 @@
 
         function updateTimer() {
             const data = JSON.parse(localStorage.getItem('active_key_data'));
+            if(!data) return;
             const r = data.expires - Date.now();
             if (r > 31536000000) {
                 document.getElementById('timer').innerText = "ACESSO VITALÍCIO";
@@ -205,7 +221,7 @@
 
         function copyKey() {
             navigator.clipboard.writeText(document.getElementById('key-text').innerText);
-            alert("Copiada!");
+            alert("Copiada para a área de transferência!");
         }
     </script>
 </body>
