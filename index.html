@@ -1,32 +1,33 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Aether Hub | Unification System</title>
+    <title>Aether Hub | Final System</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    
     <style>
         body { background-color: #05060b; color: white; font-family: 'Inter', sans-serif; min-height: 100vh; margin: 0; display: flex; align-items: center; justify-content: center; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
-        .glass { background: rgba(10, 11, 18, 0.98); border-radius: 40px; border: 1px solid rgba(255, 255, 255, 0.03); width: 100%; max-width: 95%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .glass { background: rgba(10, 11, 18, 0.98); border-radius: 40px; border: 1px solid rgba(255, 255, 255, 0.05); width: 100%; max-width: 95%; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
         .hidden { display: none !important; }
         
-        /* DESIGN PREMIUM */
-        .premium-hero { border: 2px solid #eab308; background: #000; border-radius: 35px; padding: 40px 20px; text-align: center; box-shadow: 0 0 35px rgba(234, 179, 8, 0.2); margin-bottom: 25px; }
-        .plan-btn { background: #111218; border: 1px solid #1a1b23; border-radius: 25px; padding: 22px; width: 100%; text-align: left; margin-bottom: 12px; transition: 0.3s; position: relative; overflow: hidden; cursor: pointer; touch-action: manipulation; }
+        /* Botões com Feedback Tátil para Mobile e Hover para PC */
+        .interactive-btn { transition: all 0.2s ease; cursor: pointer; touch-action: manipulation; }
+        .interactive-btn:active { transform: scale(0.95); opacity: 0.8; }
+        @media (min-width: 1024px) { .interactive-btn:hover { border-color: #6366f1; background: rgba(99, 102, 241, 0.05); } }
+
+        .premium-hero { border: 2px solid #eab308; background: #000; border-radius: 35px; padding: 40px 20px; text-align: center; box-shadow: 0 0 30px rgba(234, 179, 8, 0.15); margin-bottom: 25px; }
+        .plan-btn { background: #111218; border: 1px solid #1a1b23; border-radius: 25px; padding: 22px; width: 100%; text-align: left; margin-bottom: 12px; position: relative; overflow: hidden; }
         
-        /* INTERAÇÃO HÍBRIDA (PC & MOBILE) */
-        .btn-hover:hover { border-color: #6366f1; background: #161720; }
-        .btn-hover:active { transform: scale(0.96); }
-        
-        /* INPUTS ADMIN */
         .adm-input { background: #111218; border: 1px solid #222; border-radius: 15px; padding: 18px; width: 100%; outline: none; font-size: 16px; color: white; }
         .adm-input:focus { border-color: #6366f1; }
 
         .progress-bar { position: absolute; bottom: 0; left: 0; height: 4px; background: #6366f1; transition: width 0.5s ease; }
-        
-        .scroll-area { max-height: 300px; overflow-y: auto; scrollbar-width: none; }
+        .scroll-area { max-height: 280px; overflow-y: auto; scrollbar-width: none; }
         .scroll-area::-webkit-scrollbar { display: none; }
     </style>
 </head>
@@ -34,133 +35,114 @@
 
     <div id="view-admin-login" class="hidden glass max-w-sm w-full p-10 text-center">
         <h2 class="text-2xl font-black italic uppercase mb-8 text-indigo-500">ADMIN ACCESS</h2>
-        <input type="password" id="admin-pass" placeholder="Password" class="adm-input mb-4 text-center">
-        <button onclick="checkAdmin()" class="w-full bg-indigo-600 py-5 rounded-2xl font-black uppercase text-xs btn-hover">Entrar</button>
-        <button onclick="switchView('view-home')" class="mt-6 text-[10px] text-slate-600 uppercase font-black italic block w-full text-center">∟ Cancelar</button>
+        <input type="password" id="admin-pass" placeholder="Senha" class="adm-input mb-4 text-center">
+        <button id="btn-login" class="w-full bg-indigo-600 py-5 rounded-2xl font-black uppercase text-xs interactive-btn">Acessar Painel</button>
+        <button onclick="window.switchView('view-home')" class="mt-6 text-[10px] text-slate-600 uppercase font-black italic block w-full">∟ Cancelar</button>
     </div>
 
     <div id="view-home" class="max-w-4xl w-full text-center">
         <h1 class="text-5xl md:text-7xl font-black italic uppercase mb-16 tracking-tighter">AETHER<span class="text-indigo-500">HUB</span></h1>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
-            <div onclick="switchView('view-keys')" class="glass p-12 cursor-pointer btn-hover border border-white/5">
+            <div onclick="window.switchView('view-keys')" class="glass p-12 interactive-btn border border-white/5">
                 <div class="text-6xl mb-4">🔑</div>
                 <h2 class="text-2xl font-black uppercase italic">Pegar Key</h2>
             </div>
-            <div onclick="switchView('view-scripts')" class="glass p-12 cursor-pointer btn-hover border border-white/5">
+            <div onclick="window.switchView('view-scripts')" class="glass p-12 interactive-btn border border-white/5">
                 <div class="text-6xl mb-4">📜</div>
                 <h2 class="text-2xl font-black uppercase italic">Pegar Script</h2>
             </div>
         </div>
-        <button onclick="switchView('view-admin-login')" class="mt-20 text-[10px] text-slate-800 font-bold uppercase tracking-[0.5em] hover:text-white transition">Dashboard Admin</button>
+        <button onclick="window.switchView('view-admin-login')" class="mt-20 text-[10px] text-slate-800 font-bold uppercase tracking-[0.5em] hover:text-white transition">Dashboard Admin</button>
     </div>
 
     <div id="view-keys" class="hidden glass max-w-md w-full p-8">
         <div class="premium-hero">
             <h2 class="text-yellow-500 font-black text-3xl italic uppercase mb-6">LIFETIME PRO</h2>
-            <button class="bg-yellow-500 text-black font-black py-4 px-12 rounded-2xl uppercase text-[10px] tracking-widest btn-hover italic">Comprar Agora</button>
+            <button class="bg-yellow-500 text-black font-black py-4 px-12 rounded-2xl uppercase text-[10px] interactive-btn italic">Comprar</button>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 mb-6 text-center">
-            <div class="bg-[#111218] p-5 rounded-3xl border border-white/5">
-                <p class="text-[9px] text-slate-500 font-black uppercase">Ativas</p>
-                <span id="stat-keys" class="text-2xl font-black">0</span>
-            </div>
-            <div class="bg-[#111218] p-5 rounded-3xl border border-white/5">
-                <p class="text-[9px] text-slate-500 font-black uppercase text-rose-500">Status</p>
-                <span class="text-2xl font-black text-rose-500">Live</span>
-            </div>
-        </div>
-
-        <div class="space-y-3 mb-8">
-            <button onclick="handleLoop('Elite', 4)" class="plan-btn btn-hover" id="btn-Elite">
-                <h3 class="text-cyan-400 font-bold italic text-lg">Elite 24h (Free)</h3>
+        <div class="space-y-3 mb-6">
+            <button onclick="window.handleLoop('Elite', 4)" class="plan-btn interactive-btn" id="btn-Elite">
+                <h3 class="text-cyan-400 font-bold italic text-lg">Elite 24h</h3>
                 <p id="label-Elite" class="text-[9px] text-slate-500 uppercase font-black">Checkpoint: (0/4)</p>
                 <div id="bar-Elite" class="progress-bar" style="width: 0%"></div>
             </button>
-            <button onclick="handleLoop('Standard', 2)" class="plan-btn btn-hover" id="btn-Standard">
-                <h3 class="text-purple-400 font-bold italic text-lg">Standard 8h (Free)</h3>
+            <button onclick="window.handleLoop('Standard', 2)" class="plan-btn interactive-btn" id="btn-Standard">
+                <h3 class="text-purple-400 font-bold italic text-lg">Standard 8h</h3>
                 <p id="label-Standard" class="text-[9px] text-slate-500 uppercase font-black">Checkpoint: (0/2)</p>
                 <div id="bar-Standard" class="progress-bar" style="width: 0%"></div>
             </button>
         </div>
 
-        <div id="history-keys" class="scroll-area space-y-3 mb-10"></div>
-        <button onclick="switchView('view-home')" class="w-full text-[10px] text-slate-500 font-black uppercase italic tracking-widest text-center btn-hover">∟ Voltar</button>
+        <div id="history-keys" class="scroll-area space-y-3 mb-8"></div>
+        <button onclick="window.switchView('view-home')" class="w-full text-[10px] text-slate-500 font-black uppercase italic text-center">∟ Voltar</button>
     </div>
 
     <div id="view-scripts" class="hidden max-w-6xl w-full p-6">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
-            <h1 class="text-4xl md:text-5xl font-black italic uppercase">SCRIPTS LIBRARY</h1>
-            <button onclick="switchView('view-home')" class="bg-white/5 px-10 py-4 rounded-2xl text-xs font-black uppercase border border-white/5 btn-hover">Voltar</button>
+        <div class="flex justify-between items-center mb-12 px-4">
+            <h1 class="text-3xl font-black italic uppercase">BIBLIOTECA</h1>
+            <button onclick="window.switchView('view-home')" class="bg-white/5 px-8 py-4 rounded-2xl text-[10px] font-black uppercase interactive-btn">Voltar</button>
         </div>
         <div id="scripts-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
     </div>
 
     <div id="view-admin" class="hidden glass max-w-5xl w-full p-10 md:p-16">
         <div class="flex justify-between items-center mb-16">
-            <h1 class="text-3xl md:text-4xl font-black italic uppercase text-indigo-400">ADMIN PANEL</h1>
-            <button onclick="switchView('view-home')" class="text-rose-500 font-black text-xs uppercase italic btn-hover">Sair</button>
+            <h1 class="text-3xl font-black italic uppercase text-indigo-400">ADMIN PANEL</h1>
+            <button onclick="window.switchView('view-home')" class="text-rose-500 font-black text-xs uppercase interactive-btn">Sair</button>
         </div>
-        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div class="space-y-6">
-                <h3 class="text-xs font-black text-slate-500 uppercase italic">Gerenciar Chaves</h3>
-                <input type="text" id="adm-key-val" placeholder="Código da Key" class="adm-input">
-                <select id="adm-key-type" class="adm-input">
-                    <option value="Elite">Elite 24h</option>
-                    <option value="Standard">Standard 8h</option>
-                </select>
-                <button onclick="saveKeyToDB()" class="w-full bg-indigo-600 py-5 rounded-2xl font-black uppercase text-xs btn-hover">Salvar no Banco</button>
+                <h3 class="text-xs font-black text-slate-500 uppercase">Keys</h3>
+                <input type="text" id="adm-key-val" placeholder="Código" class="adm-input">
+                <select id="adm-key-type" class="adm-input"><option value="Elite">Elite</option><option value="Standard">Standard</option></select>
+                <button id="btn-save-key" class="w-full bg-indigo-600 py-5 rounded-2xl font-black uppercase text-xs interactive-btn">Salvar Key</button>
             </div>
             <div class="space-y-6">
-                <h3 class="text-xs font-black text-slate-500 uppercase italic">Postar Script</h3>
+                <h3 class="text-xs font-black text-slate-500 uppercase">Scripts</h3>
                 <input type="text" id="adm-script-name" placeholder="Nome do Script" class="adm-input">
-                <textarea id="adm-script-code" placeholder="Código Luau..." class="adm-input h-40 resize-none"></textarea>
-                <button onclick="saveScriptToDB()" class="w-full bg-emerald-600 py-5 rounded-2xl font-black uppercase text-xs btn-hover">Publicar Script</button>
+                <textarea id="adm-script-code" placeholder="Código..." class="adm-input h-32 resize-none"></textarea>
+                <button id="btn-save-script" class="w-full bg-emerald-600 py-5 rounded-2xl font-black uppercase text-xs interactive-btn">Postar Script</button>
             </div>
         </div>
     </div>
 
     <script>
-        // CONFIGURAÇÕES
-        const SB_URL = 'URL_DO_SUPABASE';
-        const SB_KEY = 'KEY_DO_SUPABASE';
+        // 1. CONFIGURAÇÕES
+        const SB_URL = 'SEU_URL';
+        const SB_KEY = 'SUA_KEY';
         const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
         const ADM_PASS = "019101910191";
-        const LINK_LINKVERTISE = "SEU_LINK_AQUI";
+        const LINK_LINKVERTISE = "SEU_LINK";
 
-        // NAVEGAÇÃO INTEGRADA (PC/MOBILE)
+        // 2. FUNÇÕES TORNADAS GLOBAIS (window.) PARA GARANTIR FUNCIONAMENTO NO MOBILE
         window.switchView = function(id) {
-            document.querySelectorAll('body > div').forEach(v => v.classList.add('hidden'));
+            document.querySelectorAll('body > div').forEach(div => div.classList.add('hidden'));
             const target = document.getElementById(id);
             if(target) {
                 target.classList.remove('hidden');
                 if(id === 'view-keys') { loadKeys(); updateLoopUI(); }
                 if(id === 'view-scripts') loadScripts();
-                window.scrollTo(0, 0);
             }
         };
 
-        window.checkAdmin = function() {
-            const val = document.getElementById('admin-pass').value;
-            if(val === ADM_PASS) {
-                switchView('view-admin');
-                document.getElementById('admin-pass').value = "";
-            } else { alert("Senha Incorreta!"); }
-        };
-
-        // LOOP LINKVERTISE
         window.handleLoop = function(plan, max) {
             let step = parseInt(localStorage.getItem(`step_${plan}`)) || 0;
             if(step < max) {
                 step++;
                 localStorage.setItem(`step_${plan}`, step);
-                alert(`Checkpoint ${step} de ${max}...`);
+                alert(`Checkpoint ${step}/${max}`);
                 window.location.href = LINK_LINKVERTISE;
             } else {
                 claimKey(plan);
             }
         };
+
+        async function claimKey(plan) {
+            const { data } = await supabaseClient.from('keys').select('*').eq('plan_type', plan).limit(1).single();
+            if(data) { alert(`KEY LIBERADA: ${data.value}`); localStorage.removeItem(`step_${plan}`); updateLoopUI(); }
+            else { alert("Sem keys no banco!"); }
+        }
 
         function updateLoopUI() {
             ['Elite', 'Standard'].forEach(p => {
@@ -169,46 +151,44 @@
                 const percent = (step / max) * 100;
                 if(document.getElementById(`bar-${p}`)) {
                     document.getElementById(`bar-${p}`).style.width = percent + "%";
-                    document.getElementById(`label-${p}`).innerText = step >= max ? "ETAPAS OK! RESGATAR" : `Checkpoint: (${step}/${max})`;
+                    document.getElementById(`label-${p}`).innerText = step >= max ? "CONCLUÍDO! RESGATAR" : `Etapa: (${step}/${max})`;
                 }
             });
         }
 
-        async function claimKey(plan) {
-            const { data } = await supabaseClient.from('keys').select('*').eq('plan_type', plan).limit(1).single();
-            if(data) {
-                alert(`KEY: ${data.value}`);
-                localStorage.removeItem(`step_${plan}`);
-                updateLoopUI();
-                loadKeys();
-            } else { alert("Banco vazio!"); }
-        }
+        // 3. LISTENERS SEGUROS (Evita erros de carregamento no Mobile)
+        document.addEventListener('DOMContentLoaded', () => {
+            // Botão Login
+            document.getElementById('btn-login').onclick = () => {
+                const pass = document.getElementById('admin-pass').value;
+                if(pass === ADM_PASS) { switchView('view-admin'); } else { alert("Senha Errada"); }
+            };
 
-        // DB ACTIONS
-        window.saveKeyToDB = async function() {
-            const val = document.getElementById('adm-key-val').value;
-            const type = document.getElementById('adm-key-type').value;
-            await supabaseClient.from('keys').insert([{ value: val, plan_type: type }]);
-            alert("Key Salva!"); loadKeys();
-        };
+            // Botão Salvar Key
+            document.getElementById('btn-save-key').onclick = async () => {
+                const val = document.getElementById('adm-key-val').value;
+                const type = document.getElementById('adm-key-type').value;
+                await supabaseClient.from('keys').insert([{ value: val, plan_type: type }]);
+                alert("Salvo!");
+            };
 
-        window.saveScriptToDB = async function() {
-            const n = document.getElementById('adm-script-name').value;
-            const c = document.getElementById('adm-script-code').value;
-            await supabaseClient.from('scripts').insert([{ name: n, code: c }]);
-            alert("Script Postado!"); loadScripts();
-        };
+            // Botão Salvar Script
+            document.getElementById('btn-save-script').onclick = async () => {
+                const name = document.getElementById('adm-script-name').value;
+                const code = document.getElementById('adm-script-code').value;
+                await supabaseClient.from('scripts').insert([{ name, code }]);
+                alert("Postado!");
+            };
+        });
 
         async function loadKeys() {
             const { data } = await supabaseClient.from('keys').select('*').order('created_at', {ascending: false});
             if(data) {
-                document.getElementById('stat-keys').innerText = data.length;
                 document.getElementById('history-keys').innerHTML = data.map(k => `
-                    <div class="bg-[#111218] p-5 rounded-2xl border border-white/5 flex justify-between items-center">
-                        <span class="text-[11px] font-black uppercase">${k.value}</span>
-                        <button onclick="navigator.clipboard.writeText('${k.value}');alert('Copiado!')" class="text-indigo-400">📋</button>
-                    </div>
-                `).join('');
+                    <div class="bg-[#111218] p-5 rounded-2xl border border-white/5 flex justify-between">
+                        <span class="text-[11px] font-black">${k.value}</span>
+                        <button onclick="navigator.clipboard.writeText('${k.value}');alert('Copiado')" class="text-indigo-400">📋</button>
+                    </div>`).join('');
             }
         }
 
@@ -217,15 +197,12 @@
             if(data) {
                 document.getElementById('scripts-list').innerHTML = data.map(s => `
                     <div class="glass p-8 border border-white/5 text-center">
-                        <h4 class="font-black italic uppercase text-xl mb-6">${s.name}</h4>
-                        <button onclick="navigator.clipboard.writeText(\`${s.code}\`);alert('Copiado!')" class="w-full bg-indigo-600 py-4 rounded-xl text-[10px] font-black btn-hover italic">Copiar Script</button>
-                    </div>
-                `).join('');
+                        <h4 class="font-black uppercase mb-4 italic">${s.name}</h4>
+                        <button onclick="navigator.clipboard.writeText(\`${s.code}\`);alert('Copiado')" class="w-full bg-indigo-600 py-4 rounded-xl text-[10px] font-black interactive-btn italic">Copiar Script</button>
+                    </div>`).join('');
             }
         }
-
-        document.addEventListener('DOMContentLoaded', updateLoopUI);
     </script>
 </body>
     </html>
-
+    
