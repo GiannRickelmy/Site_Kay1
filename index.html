@@ -2,213 +2,230 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aether Key | Premium Access</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aether Hub | Unification System</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #6366f1; --accent: #a855f7; --bg: #05060b; }
-        body { background-color: var(--bg); color: white; font-family: 'Inter', sans-serif; background-image: radial-gradient(circle at 50% -20%, #1e1b4b 0%, #05060b 80%); min-height: 100vh; margin: 0; display: flex; align-items: center; justify-content: center; overflow-x: hidden; }
-        .glass { background: rgba(15, 18, 30, 0.4); backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .btn-premium { background: linear-gradient(135deg, var(--primary), var(--accent)); transition: all 0.3s ease; }
-        .plan-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.2s ease; cursor: pointer; }
-        .plan-card:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.05); transform: translateY(-2px); }
-        .glow-text { text-shadow: 0 0 15px rgba(99, 102, 241, 0.5); }
+        body { background-color: #05060b; color: white; font-family: 'Inter', sans-serif; min-height: 100vh; margin: 0; display: flex; align-items: center; justify-content: center; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        .glass { background: rgba(10, 11, 18, 0.98); border-radius: 40px; border: 1px solid rgba(255, 255, 255, 0.03); width: 100%; max-width: 95%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .hidden { display: none !important; }
+        
+        /* DESIGN PREMIUM */
+        .premium-hero { border: 2px solid #eab308; background: #000; border-radius: 35px; padding: 40px 20px; text-align: center; box-shadow: 0 0 35px rgba(234, 179, 8, 0.2); margin-bottom: 25px; }
+        .plan-btn { background: #111218; border: 1px solid #1a1b23; border-radius: 25px; padding: 22px; width: 100%; text-align: left; margin-bottom: 12px; transition: 0.3s; position: relative; overflow: hidden; cursor: pointer; touch-action: manipulation; }
+        
+        /* INTERAÇÃO HÍBRIDA (PC & MOBILE) */
+        .btn-hover:hover { border-color: #6366f1; background: #161720; }
+        .btn-hover:active { transform: scale(0.96); }
+        
+        /* INPUTS ADMIN */
+        .adm-input { background: #111218; border: 1px solid #222; border-radius: 15px; padding: 18px; width: 100%; outline: none; font-size: 16px; color: white; }
+        .adm-input:focus { border-color: #6366f1; }
+
+        .progress-bar { position: absolute; bottom: 0; left: 0; height: 4px; background: #6366f1; transition: width 0.5s ease; }
+        
+        .scroll-area { max-height: 300px; overflow-y: auto; scrollbar-width: none; }
+        .scroll-area::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="p-6">
+<body class="p-4">
 
-    <div id="user-interface" class="glass max-w-md w-full p-10 rounded-[40px] text-center relative">
-        <div class="mb-8">
-            <h1 class="text-4xl font-extrabold tracking-tighter italic glow-text uppercase">AETHER<span class="text-indigo-500 font-light">KEY</span></h1>
-            <p id="status-text" class="text-slate-400 text-sm mt-2">Sistema de Verificação</p>
-        </div>
-
-        <div id="selection-area" class="space-y-3">
-            <button onclick="generateLifetime()" class="plan-card w-full p-5 rounded-3xl flex justify-between items-center border-yellow-500/30 bg-yellow-500/10">
-                <div class="text-left"><h3 class="text-yellow-500 font-bold text-lg">Lifetime Pro</h3><p class="text-yellow-600/60 text-[10px] uppercase font-bold tracking-widest">Acesso Permanente</p></div>
-                <div class="bg-yellow-500 text-black p-2 rounded-xl font-black text-xs">$$$</div>
-            </button>
-            
-            <button onclick="startVerification('24h')" class="plan-card w-full p-5 rounded-3xl flex justify-between items-center group">
-                <div class="text-left"><h3 class="text-white font-bold text-lg text-cyan-400">Elite 24h</h3><p class="text-cyan-600/60 text-xs">4 Etapas Linkvertise</p></div>
-                <div class="text-slate-500">→</div>
-            </button>
-            
-            <button onclick="startVerification('8h')" class="plan-card w-full p-5 rounded-3xl flex justify-between items-center group">
-                <div class="text-left"><h3 class="text-white font-bold text-lg text-purple-400">Standard 8h</h3><p class="text-purple-600/60 text-xs">2 Etapas Linkvertise</p></div>
-                <div class="text-slate-500">→</div>
-            </button>
-        </div>
-
-        <div id="key-result" class="hidden space-y-6">
-            <div class="bg-indigo-500/5 border border-indigo-500/20 p-8 rounded-[32px]">
-                <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-3">Chave Liberada</p>
-                <h2 id="key-text" class="text-3xl font-black text-white tracking-widest uppercase">---</h2>
-            </div>
-            <div id="timer" class="text-xs font-bold text-slate-400 py-3 bg-white/5 rounded-full inline-block px-8 border border-white/5">00:00:00</div>
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="copyKey()" class="btn-premium py-4 rounded-[20px] font-bold text-white text-sm uppercase">Copiar</button>
-                <button onclick="toggleView('selection')" class="bg-white/5 py-4 rounded-[20px] font-bold text-slate-400 text-sm uppercase">Planos</button>
-            </div>
-        </div>
-        <button onclick="promptAdmin()" class="mt-10 text-slate-800 text-[10px] font-bold uppercase tracking-[0.4em] hover:text-indigo-400">Aether Terminal</button>
+    <div id="view-admin-login" class="hidden glass max-w-sm w-full p-10 text-center">
+        <h2 class="text-2xl font-black italic uppercase mb-8 text-indigo-500">ADMIN ACCESS</h2>
+        <input type="password" id="admin-pass" placeholder="Password" class="adm-input mb-4 text-center">
+        <button onclick="checkAdmin()" class="w-full bg-indigo-600 py-5 rounded-2xl font-black uppercase text-xs btn-hover">Entrar</button>
+        <button onclick="switchView('view-home')" class="mt-6 text-[10px] text-slate-600 uppercase font-black italic block w-full text-center">∟ Cancelar</button>
     </div>
 
-    <div id="admin-interface" class="hidden fixed inset-0 z-50 bg-[#05060b] overflow-y-auto">
-        <nav class="border-b border-white/5 px-8 py-6 flex justify-between items-center bg-[#05060b]/80 backdrop-blur-md sticky top-0">
-            <h2 class="text-xl font-black italic tracking-tighter uppercase">AETHER <span class="text-indigo-500 font-normal">TERMINAL</span></h2>
-            <button onclick="location.reload()" class="px-6 py-2 rounded-xl bg-white/5 hover:bg-rose-600 transition-all text-xs font-bold">Sair</button>
-        </nav>
-        <main class="max-w-7xl mx-auto p-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                <div class="glass p-8 rounded-[32px] border-l-4 border-yellow-500">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase">Keys Vitalícias</span>
-                    <h3 id="stat-lifetime" class="text-4xl font-black mt-2">0</h3>
-                </div>
-                <div class="glass p-8 rounded-[32px] border-l-4 border-indigo-500">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase">Geradas (30 dias)</span>
-                    <h3 id="stat-30d" class="text-4xl font-black mt-2 text-indigo-400">0</h3>
-                </div>
-                <div class="glass p-8 rounded-[32px] border-l-4 border-cyan-500">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase">Geradas Hoje</span>
-                    <h3 id="stat-today" class="text-4xl font-black mt-2 text-cyan-400">0</h3>
-                </div>
+    <div id="view-home" class="max-w-4xl w-full text-center">
+        <h1 class="text-5xl md:text-7xl font-black italic uppercase mb-16 tracking-tighter">AETHER<span class="text-indigo-500">HUB</span></h1>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
+            <div onclick="switchView('view-keys')" class="glass p-12 cursor-pointer btn-hover border border-white/5">
+                <div class="text-6xl mb-4">🔑</div>
+                <h2 class="text-2xl font-black uppercase italic">Pegar Key</h2>
             </div>
-            <div class="glass p-10 rounded-[40px] border border-white/5">
-                <h3 class="text-xs font-bold text-slate-500 uppercase mb-6 tracking-widest">Fluxo de Atividade</h3>
-                <div class="h-[300px]"><canvas id="adminChart"></canvas></div>
+            <div onclick="switchView('view-scripts')" class="glass p-12 cursor-pointer btn-hover border border-white/5">
+                <div class="text-6xl mb-4">📜</div>
+                <h2 class="text-2xl font-black uppercase italic">Pegar Script</h2>
             </div>
-        </main>
+        </div>
+        <button onclick="switchView('view-admin-login')" class="mt-20 text-[10px] text-slate-800 font-bold uppercase tracking-[0.5em] hover:text-white transition">Dashboard Admin</button>
+    </div>
+
+    <div id="view-keys" class="hidden glass max-w-md w-full p-8">
+        <div class="premium-hero">
+            <h2 class="text-yellow-500 font-black text-3xl italic uppercase mb-6">LIFETIME PRO</h2>
+            <button class="bg-yellow-500 text-black font-black py-4 px-12 rounded-2xl uppercase text-[10px] tracking-widest btn-hover italic">Comprar Agora</button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-6 text-center">
+            <div class="bg-[#111218] p-5 rounded-3xl border border-white/5">
+                <p class="text-[9px] text-slate-500 font-black uppercase">Ativas</p>
+                <span id="stat-keys" class="text-2xl font-black">0</span>
+            </div>
+            <div class="bg-[#111218] p-5 rounded-3xl border border-white/5">
+                <p class="text-[9px] text-slate-500 font-black uppercase text-rose-500">Status</p>
+                <span class="text-2xl font-black text-rose-500">Live</span>
+            </div>
+        </div>
+
+        <div class="space-y-3 mb-8">
+            <button onclick="handleLoop('Elite', 4)" class="plan-btn btn-hover" id="btn-Elite">
+                <h3 class="text-cyan-400 font-bold italic text-lg">Elite 24h (Free)</h3>
+                <p id="label-Elite" class="text-[9px] text-slate-500 uppercase font-black">Checkpoint: (0/4)</p>
+                <div id="bar-Elite" class="progress-bar" style="width: 0%"></div>
+            </button>
+            <button onclick="handleLoop('Standard', 2)" class="plan-btn btn-hover" id="btn-Standard">
+                <h3 class="text-purple-400 font-bold italic text-lg">Standard 8h (Free)</h3>
+                <p id="label-Standard" class="text-[9px] text-slate-500 uppercase font-black">Checkpoint: (0/2)</p>
+                <div id="bar-Standard" class="progress-bar" style="width: 0%"></div>
+            </button>
+        </div>
+
+        <div id="history-keys" class="scroll-area space-y-3 mb-10"></div>
+        <button onclick="switchView('view-home')" class="w-full text-[10px] text-slate-500 font-black uppercase italic tracking-widest text-center btn-hover">∟ Voltar</button>
+    </div>
+
+    <div id="view-scripts" class="hidden max-w-6xl w-full p-6">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
+            <h1 class="text-4xl md:text-5xl font-black italic uppercase">SCRIPTS LIBRARY</h1>
+            <button onclick="switchView('view-home')" class="bg-white/5 px-10 py-4 rounded-2xl text-xs font-black uppercase border border-white/5 btn-hover">Voltar</button>
+        </div>
+        <div id="scripts-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+    </div>
+
+    <div id="view-admin" class="hidden glass max-w-5xl w-full p-10 md:p-16">
+        <div class="flex justify-between items-center mb-16">
+            <h1 class="text-3xl md:text-4xl font-black italic uppercase text-indigo-400">ADMIN PANEL</h1>
+            <button onclick="switchView('view-home')" class="text-rose-500 font-black text-xs uppercase italic btn-hover">Sair</button>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div class="space-y-6">
+                <h3 class="text-xs font-black text-slate-500 uppercase italic">Gerenciar Chaves</h3>
+                <input type="text" id="adm-key-val" placeholder="Código da Key" class="adm-input">
+                <select id="adm-key-type" class="adm-input">
+                    <option value="Elite">Elite 24h</option>
+                    <option value="Standard">Standard 8h</option>
+                </select>
+                <button onclick="saveKeyToDB()" class="w-full bg-indigo-600 py-5 rounded-2xl font-black uppercase text-xs btn-hover">Salvar no Banco</button>
+            </div>
+            <div class="space-y-6">
+                <h3 class="text-xs font-black text-slate-500 uppercase italic">Postar Script</h3>
+                <input type="text" id="adm-script-name" placeholder="Nome do Script" class="adm-input">
+                <textarea id="adm-script-code" placeholder="Código Luau..." class="adm-input h-40 resize-none"></textarea>
+                <button onclick="saveScriptToDB()" class="w-full bg-emerald-600 py-5 rounded-2xl font-black uppercase text-xs btn-hover">Publicar Script</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://wqtpopahxhpjjeexodik.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_DZOSpc0qTVEQQv2j5gcjfw_T1nXcK5B';
-        const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // CONFIGURAÇÕES
+        const SB_URL = 'URL_DO_SUPABASE';
+        const SB_KEY = 'KEY_DO_SUPABASE';
+        const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+        const ADM_PASS = "019101910191";
+        const LINK_LINKVERTISE = "SEU_LINK_AQUI";
 
-        // SEUS LINKS CONFIGURADOS
-        const CONFIG_LINKS = {
-            "8h": [
-                "https://direct-link.net/2564496/i4nzuNVQCeRX", 
-                "https://link-center.net/2564496/T3kCS3FIdCkn"
-            ],
-            "24h": [
-                "https://link-center.net/2564496/Ry1MGBHofDbC", 
-                "https://link-hub.net/2564496/tccRZMUncGCX",
-                "https://link-hub.net/2564496/v1rK8TifqXay",
-                "https://link-center.net/2564496/dUYJAVyDrPK2"
-            ]
+        // NAVEGAÇÃO INTEGRADA (PC/MOBILE)
+        window.switchView = function(id) {
+            document.querySelectorAll('body > div').forEach(v => v.classList.add('hidden'));
+            const target = document.getElementById(id);
+            if(target) {
+                target.classList.remove('hidden');
+                if(id === 'view-keys') { loadKeys(); updateLoopUI(); }
+                if(id === 'view-scripts') loadScripts();
+                window.scrollTo(0, 0);
+            }
         };
 
-        async function verificarSenha(senhaDigitada) {
-            const { data, error } = await _supabase.from('config_geral').select('valor').eq('id', 'admin_password').single();
-            return !error && data && senhaDigitada === data.valor;
-        }
+        window.checkAdmin = function() {
+            const val = document.getElementById('admin-pass').value;
+            if(val === ADM_PASS) {
+                switchView('view-admin');
+                document.getElementById('admin-pass').value = "";
+            } else { alert("Senha Incorreta!"); }
+        };
 
-        function startVerification(plano) {
-            localStorage.setItem('v_progress', JSON.stringify({ plano: plano, etapa: 0 }));
-            window.location.href = CONFIG_LINKS[plano][0];
-        }
-
-        async function finalizeKey(horas) {
-            const expDate = new Date();
-            expDate.setHours(expDate.getHours() + (horas > 800000 ? 876000 : horas));
-            
-            const { error } = await _supabase.from('key_logs').insert([{ 
-                plan_type: horas > 800000 ? 'Lifetime' : horas + 'h',
-                expires_at: expDate.toISOString()
-            }]);
-
-            if (!error) {
-                const key = "AETHER-" + (horas > 800000 ? "PERM-" : "") + Math.random().toString(36).substr(2, 7).toUpperCase();
-                localStorage.setItem('active_key_data', JSON.stringify({ key: key, expires: Date.now() + (horas * 3600000) }));
-                localStorage.removeItem('v_progress');
-                window.location.href = window.location.pathname;
+        // LOOP LINKVERTISE
+        window.handleLoop = function(plan, max) {
+            let step = parseInt(localStorage.getItem(`step_${plan}`)) || 0;
+            if(step < max) {
+                step++;
+                localStorage.setItem(`step_${plan}`, step);
+                alert(`Checkpoint ${step} de ${max}...`);
+                window.location.href = LINK_LINKVERTISE;
+            } else {
+                claimKey(plan);
             }
-        }
+        };
 
-        async function promptAdmin() {
-            const senha = prompt("Aether Terminal Code:");
-            if (await verificarSenha(senha)) {
-                document.getElementById('user-interface').classList.add('hidden');
-                document.getElementById('admin-interface').classList.remove('hidden');
-                loadStats();
-            } else { alert("Acesso Negado."); }
-        }
-
-        async function generateLifetime() {
-            const senha = prompt("SENHA VENDEDOR:");
-            if (await verificarSenha(senha)) { finalizeKey(876000); } 
-            else { alert("Acesso Negado."); }
-        }
-
-        async function loadStats() {
-            const { data: logs } = await _supabase.from('key_logs').select('*');
-            if (!logs) return;
-            const agora = new Date();
-            const f = (d) => logs.filter(l => (agora - new Date(l.created_at)) < (d * 86400000)).length;
-            document.getElementById('stat-lifetime').innerText = logs.filter(l => l.plan_type === 'Lifetime').length;
-            document.getElementById('stat-30d').innerText = f(30);
-            document.getElementById('stat-today').innerText = f(1);
-            new Chart(document.getElementById('adminChart'), {
-                type: 'line',
-                data: {
-                    labels: ['Hoje', '7 Dias', '30 Dias'],
-                    datasets: [{ data: [f(1), f(7), f(30)], borderColor: '#6366f1', tension: 0.4, fill: true, backgroundColor: 'rgba(99, 102, 241, 0.05)' }]
-                },
-                options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        function updateLoopUI() {
+            ['Elite', 'Standard'].forEach(p => {
+                const step = localStorage.getItem(`step_${p}`) || 0;
+                const max = p === 'Elite' ? 4 : 2;
+                const percent = (step / max) * 100;
+                if(document.getElementById(`bar-${p}`)) {
+                    document.getElementById(`bar-${p}`).style.width = percent + "%";
+                    document.getElementById(`label-${p}`).innerText = step >= max ? "ETAPAS OK! RESGATAR" : `Checkpoint: (${step}/${max})`;
+                }
             });
         }
 
-        window.onload = () => {
-            const progress = JSON.parse(localStorage.getItem('v_progress'));
-            if (progress) {
-                progress.etapa += 1;
-                const links = CONFIG_LINKS[progress.plano];
-                if (progress.etapa >= links.length) {
-                    finalizeKey(progress.plano === '8h' ? 8 : 24);
-                } else {
-                    localStorage.setItem('v_progress', JSON.stringify(progress));
-                    window.location.href = links[progress.etapa];
-                }
-                return;
-            }
-            const data = JSON.parse(localStorage.getItem('active_key_data'));
-            if(data && data.expires > Date.now()) {
-                toggleView('key');
-                document.getElementById('key-text').innerText = data.key;
-                setInterval(updateTimer, 1000);
-            }
+        async function claimKey(plan) {
+            const { data } = await supabaseClient.from('keys').select('*').eq('plan_type', plan).limit(1).single();
+            if(data) {
+                alert(`KEY: ${data.value}`);
+                localStorage.removeItem(`step_${plan}`);
+                updateLoopUI();
+                loadKeys();
+            } else { alert("Banco vazio!"); }
+        }
+
+        // DB ACTIONS
+        window.saveKeyToDB = async function() {
+            const val = document.getElementById('adm-key-val').value;
+            const type = document.getElementById('adm-key-type').value;
+            await supabaseClient.from('keys').insert([{ value: val, plan_type: type }]);
+            alert("Key Salva!"); loadKeys();
         };
 
-        function updateTimer() {
-            const data = JSON.parse(localStorage.getItem('active_key_data'));
-            if(!data) return;
-            const r = data.expires - Date.now();
-            if (r > 31536000000) {
-                document.getElementById('timer').innerText = "ACESSO VITALÍCIO";
-                document.getElementById('timer').style.color = "#eab308";
-                return;
+        window.saveScriptToDB = async function() {
+            const n = document.getElementById('adm-script-name').value;
+            const c = document.getElementById('adm-script-code').value;
+            await supabaseClient.from('scripts').insert([{ name: n, code: c }]);
+            alert("Script Postado!"); loadScripts();
+        };
+
+        async function loadKeys() {
+            const { data } = await supabaseClient.from('keys').select('*').order('created_at', {ascending: false});
+            if(data) {
+                document.getElementById('stat-keys').innerText = data.length;
+                document.getElementById('history-keys').innerHTML = data.map(k => `
+                    <div class="bg-[#111218] p-5 rounded-2xl border border-white/5 flex justify-between items-center">
+                        <span class="text-[11px] font-black uppercase">${k.value}</span>
+                        <button onclick="navigator.clipboard.writeText('${k.value}');alert('Copiado!')" class="text-indigo-400">📋</button>
+                    </div>
+                `).join('');
             }
-            if(r <= 0) { localStorage.removeItem('active_key_data'); location.reload(); }
-            const h = String(Math.floor(r/3600000)).padStart(2, '0');
-            const m = String(Math.floor((r%3600000)/60000)).padStart(2, '0');
-            const s = String(Math.floor((r%60000)/1000)).padStart(2, '0');
-            document.getElementById('timer').innerText = `${h}:${m}:${s}`;
         }
 
-        function toggleView(v) {
-            document.getElementById('selection-area').classList.toggle('hidden', v === 'key');
-            document.getElementById('key-result').classList.toggle('hidden', v !== 'key');
+        async function loadScripts() {
+            const { data } = await supabaseClient.from('scripts').select('*');
+            if(data) {
+                document.getElementById('scripts-list').innerHTML = data.map(s => `
+                    <div class="glass p-8 border border-white/5 text-center">
+                        <h4 class="font-black italic uppercase text-xl mb-6">${s.name}</h4>
+                        <button onclick="navigator.clipboard.writeText(\`${s.code}\`);alert('Copiado!')" class="w-full bg-indigo-600 py-4 rounded-xl text-[10px] font-black btn-hover italic">Copiar Script</button>
+                    </div>
+                `).join('');
+            }
         }
 
-        function copyKey() {
-            navigator.clipboard.writeText(document.getElementById('key-text').innerText);
-            alert("Copiada!");
-        }
+        document.addEventListener('DOMContentLoaded', updateLoopUI);
     </script>
 </body>
-</html>
+    </html>
+
